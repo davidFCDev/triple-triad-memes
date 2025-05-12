@@ -1,0 +1,2192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>Triple Triad Meme</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bangers&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: #000000;
+        font-family: "Bangers", sans-serif;
+        overflow: hidden;
+        touch-action: none;
+      }
+      #gameContainer {
+        width: 100%;
+        max-width: 500px;
+        height: 100vh;
+        max-height: 1000px;
+        position: relative;
+      }
+      canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        image-rendering: pixelated;
+      }
+      #tutorial,
+      #cardStealScreen,
+      #cardSelectionScreen,
+      #gameOverScreen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgb(0, 0, 0);
+        color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 20px;
+        box-sizing: border-box;
+        z-index: 10;
+        font-family: "Bangers", sans-serif;
+      }
+      #tutorial h1,
+      #cardStealScreen h1,
+      #cardSelectionScreen h1,
+      #gameOverScreen h1 {
+        font-size: 48px;
+        margin-bottom: 20px;
+        background: linear-gradient(to right, #ff3131, #31ff83);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      #tutorial p,
+      #cardStealScreen p,
+      #cardSelectionScreen p,
+      #gameOverScreen p {
+        font-size: 20px;
+        margin: 10px 0;
+      }
+      #tutorial button,
+      #cardStealScreen button,
+      #cardSelectionScreen button,
+      #gameOverScreen button {
+        margin: 15px;
+        padding: 15px 30px;
+        font-size: 20px;
+        border: 2px solid #ffffff;
+        border-radius: 5px;
+        cursor: pointer;
+        font-family: "Bangers", sans-serif;
+        font-weight: bold;
+        transition: transform 0.2s;
+      }
+      #tutorial button:hover,
+      #cardStealScreen button:hover,
+      #cardSelectionScreen button:hover,
+      #gameOverScreen button:hover {
+        transform: scale(1.05);
+      }
+      #tutorial #startButton,
+      #cardSelectionScreen #confirmButton,
+      #gameOverScreen #restartButton {
+        background: #ff3131;
+        color: #000000;
+      }
+      #tutorial #rulesButton {
+        background: #31ff83;
+        color: #000000;
+        position: relative;
+        padding-right: 40px;
+      }
+      #tutorial #rulesButton::after {
+        content: "→";
+        position: absolute;
+        right: 15px;
+        font-size: 20px;
+      }
+      #rulesModal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 20;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      #rulesModal .modal-content {
+        background: #000000;
+        color: #ffffff;
+        padding: 20px;
+        max-width: 400px;
+        width: 100%;
+        border: 2px solid #ffffff;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        text-align: left;
+        line-height: 1.5;
+      }
+      #rulesModal .modal-content h2 {
+        font-family: "Bangers", sans-serif;
+        font-size: 24px;
+        margin-bottom: 10px;
+        background: linear-gradient(to right, #ff3131, #31ff83);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      #rulesModal .modal-content p {
+        margin: 10px 0;
+      }
+      #rulesModal .modal-content .rule-name {
+        letter-spacing: 1px;
+        color: #ff3131;
+      }
+      #rulesModal .modal-content button {
+        padding: 10px 20px;
+        font-size: 16px;
+        background: #000000;
+        color: #ffffff;
+        border: 2px solid #ffffff;
+        border-radius: 5px;
+        cursor: pointer;
+        font-family: "Bangers", sans-serif;
+        font-weight: bold;
+      }
+      #cardStealScreen .card-container,
+      #cardSelectionScreen .card-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin: 20px 0;
+      }
+      #cardStealScreen .card,
+      #cardSelectionScreen .card {
+        width: 90px;
+        height: 126px;
+        cursor: pointer;
+        transition: transform 0.2s;
+        position: relative;
+      }
+      #cardStealScreen .card:hover,
+      #cardSelectionScreen .card:hover {
+        transform: scale(1.05);
+      }
+      #cardStealScreen .card.selected,
+      #cardSelectionScreen .card.selected {
+        border: 2px solid #ffffff;
+        transform: scale(1.05);
+      }
+      #cardSelectionScreen #confirmButton:disabled {
+        background: #666666;
+        cursor: not-allowed;
+      }
+      #cardStealScreen .card canvas,
+      #cardSelectionScreen .card canvas {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+      #infoButton {
+        position: absolute;
+        top: 540px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        background: #000000;
+        color: #ffffff;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        font-size: 20px;
+        cursor: pointer;
+        font-family: "Bangers", sans-serif;
+        z-index: 10;
+        transition: transform 0.2s;
+      }
+      #infoButton:hover {
+        transform: scale(1.05);
+      }
+      .canvas-score-timer {
+        font-family: "Bangers", sans-serif;
+        font-size: 24px;
+        font-weight: bold;
+        color: #ffffff;
+        text-align: center;
+        text-shadow: 0 0 2px rgba(0, 0, 0, 0.7);
+      }
+      .canvas-indicator-label {
+        font-family: "Bangers", sans-serif;
+        font-size: 20px;
+        font-weight: bold;
+        text-align: center;
+        text-shadow: 0 0 2px rgba(0, 0, 0, 0.7);
+      }
+      .canvas-indicator-number {
+        font-family: "Bangers", sans-serif;
+        font-size: 56px;
+        font-weight: bold;
+        text-align: center;
+        text-shadow: 0 0 2px rgba(0, 0, 0, 0.7);
+      }
+      .canvas-start-message {
+        font-family: "Bangers", sans-serif;
+        font-size: 20px;
+        font-weight: bold;
+        color: #ffffff;
+        text-align: center;
+      }
+      .canvas-game-over-result {
+        font-family: "Bangers", sans-serif;
+        font-size: 20px;
+        font-weight: bold;
+        color: #ffffff;
+        text-align: center;
+      }
+      .canvas-game-over-continue {
+        font-family: "Bangers", sans-serif;
+        font-size: 16px;
+        font-weight: bold;
+        color: #ffffff;
+        text-align: center;
+      }
+      .canvas-level-screen {
+        font-family: "Bangers", sans-serif;
+        font-weight: bold;
+        text-align: center;
+        text-shadow: 0 0 2px rgba(0, 0, 0, 0.7);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="gameContainer">
+      <canvas id="gameCanvas"></canvas>
+      <div id="tutorial">
+        <h1>Triple Triad Meme</h1>
+        <p>Drag cards and capture opponent's cards</p>
+        <p>Advance through increasingly difficult levels</p>
+        <button id="rulesButton" onclick="openRulesModal()">Read Rules</button>
+        <button id="startButton" onclick="startGame()">Start</button>
+      </div>
+      <div id="rulesModal">
+        <div class="modal-content">
+          <h2>Game Rules</h2>
+          <p>
+            <strong class="rule-name">Equal:</strong> If a card is placed with
+            two or more edges whose values equal those of the opponent's
+            adjacent cards, the latter will be turned over.
+          </p>
+          <p>
+            <strong class="rule-name">Sum:</strong> If a card is placed with two
+            or more edges whose sums with the opponent's adjacent cards' values
+            are equal, the latter will be turned over.
+          </p>
+          <p>
+            <strong class="rule-name">Chain:</strong> Cards that have been
+            turned over due to the equals or sum rule act as if they had just
+            been turned over, and can turn over other cards.
+          </p>
+          <p>
+            <strong class="rule-name">Mixed hand:</strong> The cards to be used
+            are chosen at random.
+          </p>
+          <p>
+            <strong class="rule-name">Open:</strong> The cards to be used are
+            visible from the beginning.
+          </p>
+          <button onclick="closeRulesModal()">Close</button>
+        </div>
+      </div>
+      <div id="cardStealScreen" style="display: none">
+        <h1>Steal a Card</h1>
+        <p>
+          Select one card from your opponent's hand to add to your collection
+        </p>
+        <div class="card-container" id="stealCardContainer"></div>
+      </div>
+      <div id="cardSelectionScreen" style="display: none">
+        <h1>Select Your Hand</h1>
+        <p>Choose 5 cards from your collection</p>
+        <div class="card-container" id="selectCardContainer"></div>
+        <button id="confirmButton" disabled>Confirm</button>
+      </div>
+      <div id="gameOverScreen" style="display: none">
+        <h1>Game Over</h1>
+        <p>You have been defeated!</p>
+        <button id="restartButton" onclick="restartGame()">Restart</button>
+      </div>
+      <div id="infoButton" onclick="openRulesModal()">i</div>
+      <audio id="backgroundMusic" loop autoplay muted>
+        <source
+          src="https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/music1-kjFEV9LZjn4Tup20N6Cli4MqJURbHI.mp3?Hwoo"
+          type="audio/mpeg"
+        />
+      </audio>
+      <audio id="flipSound">
+        <source
+          src="https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/flipcard-bJDvwWtrcVtiVAIubenJxDbVBd1CXY.mp3?qmdN"
+          type="audio/mpeg"
+        />
+      </audio>
+    </div>
+    <script>
+      function startGame() {
+        tutorialVisible = false;
+        document.getElementById("tutorial").style.display = "none";
+        document.getElementById("backgroundMusic").muted = false;
+        document.getElementById("backgroundMusic").volume = 0.3;
+        initGame();
+      }
+
+      function restartGame() {
+        document.getElementById("gameOverScreen").style.display = "none";
+        level = 1;
+        playerCardBank = [];
+        playerHand = [];
+        initGame();
+      }
+
+      function openRulesModal() {
+        document.getElementById("rulesModal").style.display = "flex";
+      }
+
+      function closeRulesModal() {
+        document.getElementById("rulesModal").style.display = "none";
+      }
+
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      let scaleFactor = 1;
+      let board = Array(9).fill(null);
+      let playerHand = [];
+      let aiHand = [];
+      let initialAiHand = [];
+      let playerCardBank = [];
+      let currentPlayer = "player";
+      let playerScore = 0;
+      let aiScore = 0;
+      let totalScore = 0;
+      let selectedCard = null;
+      let draggingCard = null;
+      let hoveredCard = null;
+      let dragOffsetX = 0;
+      let dragOffsetY = 0;
+      let gameOver = false;
+      let tutorialVisible = true;
+      let level = 1;
+      let opponentName = "";
+      let gameTime = 0;
+      let timerInterval;
+      let flippingCards = [];
+      let highlightedCell = -1;
+      let startMessage = { text: "", opacity: 1, time: 0 };
+      let levelScreenVisible = true;
+      let levelScreenStartTime = 0;
+      let levelScreenShown = false;
+      let cardStealScreenVisible = false;
+      let cardSelectionScreenVisible = false;
+      let drawRequested = false;
+      let activeRules = [];
+
+      const opponentNames = [
+        "Sergeant Pepe",
+        "Captain Zara",
+        "Major Blitz",
+        "Colonel Fang",
+        "General Thorn",
+      ];
+      const boardWidthPx = 360;
+      const boardHeightPx = 504;
+      const cardWidthPx = 120;
+      const cardHeightPx = 168;
+      const handCardWidthPx = 90;
+      const handCardHeightPx = 126;
+      const aiCardWidthPx = 90;
+      const aiCardHeightPx = 126;
+      const aiHandY = 60;
+
+      const cardDatabase = [
+        {
+          id: 1,
+          tier: "S",
+          values: [10, 7, 6, 8],
+          element: "Poison",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta1-Q3U90gcLoB6BToQRLeggVDuRHz8wLY.png?qGoq",
+        },
+        {
+          id: 2,
+          tier: "S",
+          values: [6, 8, 10, 7],
+          element: "Blue Fire",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta2-yD57XXsxEnIgEAiDPO6FKyv2PM2ycf.png?3OpE",
+        },
+        {
+          id: 3,
+          tier: "S",
+          values: [7, 6, 8, 10],
+          element: "Spirit",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta3-BmhLIAAK90aKiJVqEhlrbHAJxZV32x.png?P54r",
+        },
+        {
+          id: 4,
+          tier: "S",
+          values: [8, 10, 7, 6],
+          element: "Void",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta4-St0lH9UNG0trx7oirVJjXn8LoBtEoq.png?AyCQ",
+        },
+        {
+          id: 5,
+          tier: "S",
+          values: [8, 9, 7, 8],
+          element: "Thunder",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta5-SR9pkVoo6NKMaMgBwIXJXzOub2lh5v.png?waZW",
+        },
+        {
+          id: 6,
+          tier: "A",
+          values: [9, 6, 5, 7],
+          element: "Thunder",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta6-yBatSsTHsA70TQHYOjki5u5jGPyG5l.png?0U4G",
+        },
+        {
+          id: 7,
+          tier: "A",
+          values: [5, 7, 9, 6],
+          element: "Frost",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta7-ZdlImD9gFakrydTrmdFAJi5CdISccz.png?ubar",
+        },
+        {
+          id: 8,
+          tier: "A",
+          values: [6, 5, 7, 9],
+          element: "Gold",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta8-Bv2u19garV23qelvvqawxtPVz1BZfL.png?7A4P",
+        },
+        {
+          id: 9,
+          tier: "A",
+          values: [7, 9, 6, 5],
+          element: "Gold",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta9-Yc47tgnyZ6ZPt9ks4xUPp5a1nbFptg.png?cDXH",
+        },
+        {
+          id: 10,
+          tier: "A",
+          values: [7, 8, 6, 7],
+          element: "Void",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta10-cWVD0dj0e35YkkdGeAZ5n0qJ5Yc6vC.png?NQQP",
+        },
+        {
+          id: 11,
+          tier: "B",
+          values: [8, 5, 4, 6],
+          element: "Blue Fire",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta11-jF6kHFh7VUxNi9XtUVngK5lNqKiWiB.png?wEgs",
+        },
+        {
+          id: 12,
+          tier: "B",
+          values: [4, 6, 8, 5],
+          element: "Spirit",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta12-GV8XMJbQgrpNl02ROtblCnF4mtS8zZ.png?m7kD",
+        },
+        {
+          id: 13,
+          tier: "B",
+          values: [5, 4, 6, 8],
+          element: "Frost",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta13-4lxa05zK0F4zLULrLfkOobSjNjc4pL.png?Hgl5",
+        },
+        {
+          id: 14,
+          tier: "B",
+          values: [6, 8, 5, 4],
+          element: "Void",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta14-2kB2ArGwSP5mMPm6yPfKvtD2P9ZSTE.png?6vf5",
+        },
+        {
+          id: 15,
+          tier: "B",
+          values: [6, 7, 5, 6],
+          element: "Poison",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta15-4NLly9NxyiaoXrTuT6CzyNMQs3UaGC.png?6G0R",
+        },
+        {
+          id: 16,
+          tier: "C",
+          values: [7, 3, 2, 8],
+          element: "No element",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta16-g7CeXJ4pIJHrI0ByiMFZpzKF3xnWZo.png?Wifu",
+        },
+        {
+          id: 17,
+          tier: "C",
+          values: [3, 4, 8, 4],
+          element: "No element",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta17-yoOOYRIZw9hukaISCrYiY8SIvRwbNQ.png?xtfZ",
+        },
+        {
+          id: 18,
+          tier: "C",
+          values: [1, 3, 6, 8],
+          element: "No element",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta18-w9WxI6rOLxONtQl9sEU6ICtH3L4Yid.png?qPJm",
+        },
+        {
+          id: 19,
+          tier: "C",
+          values: [5, 9, 1, 2],
+          element: "No element",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta19-Rf7KpdnadNwybvIISmRCuzEAfk2JL1.png?o6w7",
+        },
+        {
+          id: 20,
+          tier: "C",
+          values: [4, 5, 3, 4],
+          element: "No element",
+          image:
+            "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/carta20-tqineyrVlV3QVmoDjSd4VH9t716mVE.png?uy1w",
+        },
+      ];
+
+      const cardImages = cardDatabase.map((card) => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.src = card.image;
+        return img;
+      });
+
+      const boardImage = new Image();
+      boardImage.crossOrigin = "Anonymous";
+      boardImage.src =
+        "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/Dise%C3%B1o%20sin%20t%C3%ADtulo%20%2834%29-j6kMu2qRF78WNzk57s2jEWg74L8EBB.png?4wh8";
+
+      const backImage = new Image();
+      backImage.crossOrigin = "Anonymous";
+      backImage.src =
+        "https://lqy3lriiybxcejon.public.blob.vercel-storage.com/wknmNHLS2O2r/Game%20On%20%282%29-KcOBLLi6T6w4JKl3yIaOCWawc7RaZc.png?rOfA";
+      backImage.onload = () => draw();
+
+      function resizeCanvas() {
+        const container = document.getElementById("gameContainer");
+        const width = Math.min(container.clientWidth, 500);
+        const height = Math.min(container.clientHeight, 1000);
+        scaleFactor = width / 500;
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        drawRequested = true;
+        requestAnimationFrame(draw);
+      }
+
+      function getTierDistribution(level) {
+        if (level === 1) return { player: { C: 3, B: 2 }, ai: { C: 3, B: 2 } };
+        if (level === 2)
+          return { player: { C: 3, B: 2 }, ai: { C: 2, B: 2, A: 1 } };
+        if (level === 3)
+          return { player: { C: 3, B: 2 }, ai: { C: 1, B: 2, A: 2 } };
+        if (level === 4)
+          return { player: { C: 3, B: 2 }, ai: { C: 1, B: 1, A: 2, S: 1 } };
+        return { player: { C: 3, B: 2 }, ai: { B: 1, A: 2, S: 2 } };
+      }
+
+      function generateHand(distribution, owner, availableCards) {
+        const hand = [];
+        const tiers = Object.keys(distribution);
+        for (const tier of tiers) {
+          const count = distribution[tier] || 0;
+          const tierCards = availableCards.filter((card) => card.tier === tier);
+          for (let i = 0; i < count && tierCards.length > 0; i++) {
+            const index = Math.floor(Math.random() * tierCards.length);
+            const card = {
+              ...tierCards[index],
+              owner,
+              imageIndex: cardDatabase.findIndex(
+                (c) => c.id === tierCards[index].id
+              ),
+            };
+            hand.push(card);
+            tierCards.splice(index, 1);
+          }
+        }
+        return hand;
+      }
+
+      function getLevelRules(level) {
+        const possibleRules = ["Equal", "Sum", "Chain", "Mixed hand", "Open"];
+        let rules = [];
+        if (level === 1) rules = ["Open", "Equal", "Sum"];
+        else if (level === 2) rules = ["Open", "Mixed hand"];
+        else if (level === 3) rules = ["Equal"];
+        else if (level === 4) rules = ["Equal", "Sum"];
+        else if (level === 5) rules = ["Sum", "Chain"];
+        else if (level === 6) rules = ["Equal", "Sum", "Chain"];
+        else {
+          const ruleCount = Math.min(4, 2 + Math.floor((level - 7) / 2));
+          const shuffledRules = possibleRules.sort(() => Math.random() - 0.5);
+          rules = shuffledRules.slice(0, ruleCount);
+        }
+        return rules;
+      }
+
+      function drawCardValues(canvas, card) {
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.font = `bold 16px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        const offsetX = 20;
+        const offsetY = 20;
+        const spacing = 8;
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 3;
+        ctx.strokeText(
+          card.values[0] === 10 ? "A" : card.values[0],
+          offsetX,
+          offsetY - spacing
+        );
+        ctx.fillText(
+          card.values[0] === 10 ? "A" : card.values[0],
+          offsetX,
+          offsetY - spacing
+        );
+        ctx.strokeText(
+          card.values[1] === 10 ? "A" : card.values[1],
+          offsetX + spacing,
+          offsetY
+        );
+        ctx.fillText(
+          card.values[1] === 10 ? "A" : card.values[1],
+          offsetX + spacing,
+          offsetY
+        );
+        ctx.strokeText(
+          card.values[2] === 10 ? "A" : card.values[2],
+          offsetX,
+          offsetY + spacing
+        );
+        ctx.fillText(
+          card.values[2] === 10 ? "A" : card.values[2],
+          offsetX,
+          offsetY + spacing
+        );
+        ctx.strokeText(
+          card.values[3] === 10 ? "A" : card.values[3],
+          offsetX - spacing,
+          offsetY
+        );
+        ctx.fillText(
+          card.values[3] === 10 ? "A" : card.values[3],
+          offsetX - spacing,
+          offsetY
+        );
+      }
+
+      function initGame() {
+        if (playerCardBank.length === 0) {
+          const initialCards = cardDatabase.filter((card) =>
+            ["B", "C"].includes(card.tier)
+          );
+          for (let i = 0; i < 5; i++) {
+            const index = Math.floor(Math.random() * initialCards.length);
+            const card = {
+              ...initialCards[index],
+              owner: "player",
+              imageIndex: cardDatabase.findIndex(
+                (c) => c.id === initialCards[index].id
+              ),
+            };
+            playerCardBank.push(card);
+            playerHand.push(card);
+            initialCards.splice(index, 1);
+          }
+        }
+        board = Array(9).fill(null);
+        aiHand = [];
+        const distributions = getTierDistribution(level);
+        const availableAiCards = cardDatabase.filter(
+          (card) => !playerCardBank.some((pc) => pc.id === card.id)
+        );
+        initialAiHand = generateHand(distributions.ai, "ai", availableAiCards);
+        aiHand = [...initialAiHand];
+        opponentName =
+          opponentNames[Math.min(level - 1, opponentNames.length - 1)];
+        activeRules = getLevelRules(level);
+        playerScore = 5;
+        aiScore = 5;
+        selectedCard = null;
+        draggingCard = null;
+        hoveredCard = null;
+        gameOver = false;
+        gameTime = 0;
+        flippingCards = [];
+        highlightedCell = -1;
+        if (!levelScreenShown) {
+          levelScreenVisible = true;
+          levelScreenStartTime = Date.now();
+        }
+        cardStealScreenVisible = false;
+        cardSelectionScreenVisible = false;
+        document.getElementById("infoButton").style.display = "none";
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          gameTime++;
+          drawRequested = true;
+          requestAnimationFrame(draw);
+        }, 1000);
+        if (level === 1 || activeRules.includes("Mixed hand")) {
+          if (playerHand.length === 0) {
+            const distributions = getTierDistribution(level);
+            playerHand = generateHand(
+              distributions.player,
+              "player",
+              playerCardBank
+            );
+          }
+          currentPlayer = Math.random() < 0.5 ? "player" : "ai";
+          startMessage = {
+            text: currentPlayer === "player" ? "Player Starts!" : "AI Starts!",
+            opacity: 1,
+            time: Date.now(),
+          };
+          if (currentPlayer === "ai") setTimeout(aiMove, 2000);
+        } else {
+          showCardSelectionScreen();
+        }
+        drawRequested = true;
+        requestAnimationFrame(draw);
+      }
+
+      function showCardStealScreen() {
+        cardStealScreenVisible = true;
+        document.getElementById("cardStealScreen").style.display = "flex";
+        document.getElementById("infoButton").style.display = "none";
+        const container = document.getElementById("stealCardContainer");
+        container.innerHTML = "";
+        initialAiHand.forEach((card, index) => {
+          const cardElement = document.createElement("div");
+          cardElement.className = "card";
+          cardElement.style.backgroundImage = `url(${card.image})`;
+          cardElement.style.backgroundSize = "cover";
+          cardElement.dataset.index = index;
+
+          const canvas = document.createElement("canvas");
+          canvas.width = 90;
+          canvas.height = 126;
+          drawCardValues(canvas, card);
+          cardElement.appendChild(canvas);
+
+          cardElement.addEventListener("click", () => {
+            container
+              .querySelectorAll(".card")
+              .forEach((el) => el.classList.remove("selected"));
+            cardElement.classList.add("selected");
+            playerCardBank.push({
+              ...card,
+              owner: "player",
+              imageIndex: card.imageIndex,
+            });
+            playerHand = [];
+            document.getElementById("cardStealScreen").style.display = "none";
+            cardStealScreenVisible = false;
+            level++;
+            levelScreenVisible = true;
+            levelScreenStartTime = Date.now();
+            levelScreenShown = true;
+            setTimeout(() => {
+              showCardSelectionScreen();
+              levelScreenShown = false;
+            }, 2000);
+          });
+          container.appendChild(cardElement);
+        });
+        drawRequested = true;
+        requestAnimationFrame(draw);
+      }
+
+      function showCardSelectionScreen() {
+        if (activeRules.includes("Mixed hand")) {
+          const distributions = getTierDistribution(level);
+          playerHand = generateHand(
+            distributions.player,
+            "player",
+            playerCardBank
+          );
+          initGame();
+          return;
+        }
+        cardSelectionScreenVisible = true;
+        document.getElementById("cardSelectionScreen").style.display = "flex";
+        document.getElementById("infoButton").style.display = "none";
+        const container = document.getElementById("selectCardContainer");
+        const confirmButton = document.getElementById("confirmButton");
+        container.innerHTML = "";
+        const selectedCards = [];
+        playerCardBank.forEach((card, index) => {
+          const cardElement = document.createElement("div");
+          cardElement.className = "card";
+          cardElement.style.backgroundImage = `url(${card.image})`;
+          cardElement.style.backgroundSize = "cover";
+          cardElement.dataset.index = index;
+
+          const canvas = document.createElement("canvas");
+          canvas.width = 90;
+          canvas.height = 126;
+          drawCardValues(canvas, card);
+          cardElement.appendChild(canvas);
+
+          cardElement.addEventListener("click", () => {
+            if (cardElement.classList.contains("selected")) {
+              cardElement.classList.remove("selected");
+              const idx = selectedCards.indexOf(index);
+              if (idx !== -1) selectedCards.splice(idx, 1);
+            } else if (selectedCards.length < 5) {
+              cardElement.classList.add("selected");
+              selectedCards.push(index);
+            }
+            confirmButton.disabled = selectedCards.length !== 5;
+          });
+          container.appendChild(cardElement);
+        });
+        confirmButton.disabled = true;
+        confirmButton.onclick = () => {
+          if (selectedCards.length === 5) {
+            playerHand = selectedCards.map((idx) => ({
+              ...playerCardBank[idx],
+              owner: "player",
+              imageIndex: playerCardBank[idx].imageIndex,
+            }));
+            document.getElementById("cardSelectionScreen").style.display =
+              "none";
+            cardSelectionScreenVisible = false;
+            levelScreenShown = true;
+            initGame();
+            drawRequested = true;
+            requestAnimationFrame(draw);
+          }
+        };
+        drawRequested = true;
+        requestAnimationFrame(draw);
+      }
+
+      function drawCard(
+        x,
+        y,
+        card,
+        width,
+        height,
+        isSelected = false,
+        isDragging = false,
+        isBack = false,
+        oldOwner = null,
+        isHovered = false
+      ) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scaleFactor, scaleFactor);
+
+        ctx.beginPath();
+        ctx.rect(0, 0, width, height);
+        ctx.clip();
+
+        if (isBack) {
+          ctx.fillStyle = "#333333";
+          ctx.fillRect(0, 0, width, height);
+          if (backImage.complete && backImage.naturalWidth) {
+            ctx.drawImage(backImage, 0, 0, width, height);
+          }
+        } else {
+          ctx.fillStyle = card.owner === "player" ? "#ff3131" : "#31ff83";
+          if (oldOwner) {
+            ctx.fillStyle = oldOwner === "player" ? "#ff3131" : "#31ff83";
+          }
+          ctx.fillRect(0, 0, width, height);
+
+          ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+          ctx.shadowBlur = 4;
+          ctx.shadowOffsetX = 2;
+          ctx.shadowOffsetY = 2;
+          ctx.fillRect(0, 0, width, height);
+          ctx.shadowColor = "transparent";
+        }
+
+        if (!isBack) {
+          const cardImage = cardImages[card.imageIndex];
+          if (cardImage.complete && cardImage.naturalWidth) {
+            ctx.drawImage(cardImage, 0, 0, width, height);
+          }
+        }
+
+        if (!isBack) {
+          ctx.font = `bold 16px Arial`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          const offsetX = 20;
+          const offsetY = 20;
+          const spacing = 8;
+
+          ctx.fillStyle = "#ffffff";
+          ctx.strokeStyle = "#000000";
+          ctx.lineWidth = 3;
+          ctx.strokeText(
+            card.values[0] === 10 ? "A" : card.values[0],
+            offsetX,
+            offsetY - spacing
+          );
+          ctx.fillText(
+            card.values[0] === 10 ? "A" : card.values[0],
+            offsetX,
+            offsetY - spacing
+          );
+          ctx.strokeText(
+            card.values[1] === 10 ? "A" : card.values[1],
+            offsetX + spacing,
+            offsetY
+          );
+          ctx.fillText(
+            card.values[1] === 10 ? "A" : card.values[1],
+            offsetX + spacing,
+            offsetY
+          );
+          ctx.strokeText(
+            card.values[2] === 10 ? "A" : card.values[2],
+            offsetX,
+            offsetY + spacing
+          );
+          ctx.fillText(
+            card.values[2] === 10 ? "A" : card.values[2],
+            offsetX,
+            offsetY + spacing
+          );
+          ctx.strokeText(
+            card.values[3] === 10 ? "A" : card.values[3],
+            offsetX - spacing,
+            offsetY
+          );
+          ctx.fillText(
+            card.values[3] === 10 ? "A" : card.values[3],
+            offsetX - spacing,
+            offsetY
+          );
+        }
+
+        ctx.restore();
+      }
+
+      function checkCapture(index, card) {
+        const row = Math.floor(index / 3);
+        const col = index % 3;
+        let captures = [];
+        let chainCaptures = [];
+
+        // Standard capture (value comparison)
+        if (
+          row > 0 &&
+          board[index - 3] &&
+          board[index - 3].owner !== card.owner
+        ) {
+          if (card.values[0] > board[index - 3].values[2]) {
+            captures.push(index - 3);
+          }
+        }
+        if (
+          col < 2 &&
+          board[index + 1] &&
+          board[index + 1].owner !== card.owner
+        ) {
+          if (card.values[1] > board[index + 1].values[3]) {
+            captures.push(index + 1);
+          }
+        }
+        if (
+          row < 2 &&
+          board[index + 3] &&
+          board[index + 3].owner !== card.owner
+        ) {
+          if (card.values[2] > board[index + 3].values[0]) {
+            captures.push(index + 3);
+          }
+        }
+        if (
+          col > 0 &&
+          board[index - 1] &&
+          board[index - 1].owner !== card.owner
+        ) {
+          if (card.values[3] > board[index - 1].values[1]) {
+            captures.push(index - 1);
+          }
+        }
+
+        // Equal rule
+        if (activeRules.includes("Equal")) {
+          let equalCount = 0;
+          const equalCaptures = [];
+          if (
+            row > 0 &&
+            board[index - 3] &&
+            board[index - 3].owner !== card.owner &&
+            card.values[0] === board[index - 3].values[2]
+          ) {
+            equalCount++;
+            equalCaptures.push(index - 3);
+          }
+          if (
+            col < 2 &&
+            board[index + 1] &&
+            board[index + 1].owner !== card.owner &&
+            card.values[1] === board[index + 1].values[3]
+          ) {
+            equalCount++;
+            equalCaptures.push(index + 1);
+          }
+          if (
+            row < 2 &&
+            board[index + 3] &&
+            board[index + 3].owner !== card.owner &&
+            card.values[2] === board[index + 3].values[0]
+          ) {
+            equalCount++;
+            equalCaptures.push(index + 3);
+          }
+          if (
+            col > 0 &&
+            board[index - 1] &&
+            board[index - 1].owner !== card.owner &&
+            card.values[3] === board[index - 1].values[1]
+          ) {
+            equalCount++;
+            equalCaptures.push(index - 1);
+          }
+          if (equalCount >= 2) {
+            captures.push(...equalCaptures);
+          }
+        }
+
+        // Sum rule
+        if (activeRules.includes("Sum")) {
+          let sumMatches = [];
+          if (
+            row > 0 &&
+            board[index - 3] &&
+            board[index - 3].owner !== card.owner
+          ) {
+            sumMatches.push({
+              index: index - 3,
+              sum: card.values[0] + board[index - 3].values[2],
+            });
+          }
+          if (
+            col < 2 &&
+            board[index + 1] &&
+            board[index + 1].owner !== card.owner
+          ) {
+            sumMatches.push({
+              index: index + 1,
+              sum: card.values[1] + board[index + 1].values[3],
+            });
+          }
+          if (
+            row < 2 &&
+            board[index + 3] &&
+            board[index + 3].owner !== card.owner
+          ) {
+            sumMatches.push({
+              index: index + 3,
+              sum: card.values[2] + board[index + 3].values[0],
+            });
+          }
+          if (
+            col > 0 &&
+            board[index - 1] &&
+            board[index - 1].owner !== card.owner
+          ) {
+            sumMatches.push({
+              index: index - 1,
+              sum: card.values[3] + board[index - 1].values[1],
+            });
+          }
+          const sums = sumMatches.map((m) => m.sum);
+          const commonSum = sums.find((sum, i) => sums.indexOf(sum) !== i);
+          if (
+            commonSum &&
+            sumMatches.filter((m) => m.sum === commonSum).length >= 2
+          ) {
+            captures.push(
+              ...sumMatches
+                .filter((m) => m.sum === commonSum)
+                .map((m) => m.index)
+            );
+          }
+        }
+
+        captures = [...new Set(captures)]; // Remove duplicates
+        chainCaptures.push(...captures);
+
+        // Chain rule
+        if (activeRules.includes("Chain")) {
+          const queue = captures.map((idx) => ({
+            index: idx,
+            newOwner: card.owner,
+          }));
+          while (queue.length > 0) {
+            const { index: chainIndex, newOwner } = queue.shift();
+            const chainRow = Math.floor(chainIndex / 3);
+            const chainCol = chainIndex % 3;
+            const chainCard = board[chainIndex];
+
+            let newCaptures = [];
+            if (
+              chainRow > 0 &&
+              board[chainIndex - 3] &&
+              board[chainIndex - 3].owner !== newOwner
+            ) {
+              if (chainCard.values[0] > board[chainIndex - 3].values[2]) {
+                newCaptures.push(chainIndex - 3);
+              }
+            }
+            if (
+              chainCol < 2 &&
+              board[chainIndex + 1] &&
+              board[chainIndex + 1].owner !== newOwner
+            ) {
+              if (chainCard.values[1] > board[chainIndex + 1].values[3]) {
+                newCaptures.push(chainIndex + 1);
+              }
+            }
+            if (
+              chainRow < 2 &&
+              board[chainIndex + 3] &&
+              board[chainIndex + 3].owner !== newOwner
+            ) {
+              if (chainCard.values[2] > board[chainIndex + 3].values[0]) {
+                newCaptures.push(chainIndex + 3);
+              }
+            }
+            if (
+              chainCol > 0 &&
+              board[chainIndex - 1] &&
+              board[chainIndex - 1].owner !== newOwner
+            ) {
+              if (chainCard.values[3] > board[chainIndex - 1].values[1]) {
+                newCaptures.push(chainIndex - 1);
+              }
+            }
+
+            // Chain Equal
+            if (activeRules.includes("Equal")) {
+              let equalCount = 0;
+              const equalCaptures = [];
+              if (
+                chainRow > 0 &&
+                board[chainIndex - 3] &&
+                board[chainIndex - 3].owner !== newOwner &&
+                chainCard.values[0] === board[chainIndex - 3].values[2]
+              ) {
+                equalCount++;
+                equalCaptures.push(chainIndex - 3);
+              }
+              if (
+                chainCol < 2 &&
+                board[chainIndex + 1] &&
+                board[chainIndex + 1].owner !== newOwner &&
+                chainCard.values[1] === board[chainIndex + 1].values[3]
+              ) {
+                equalCount++;
+                equalCaptures.push(chainIndex + 1);
+              }
+              if (
+                chainRow < 2 &&
+                board[chainIndex + 3] &&
+                board[chainIndex + 3].owner !== newOwner &&
+                chainCard.values[2] === board[chainIndex + 3].values[0]
+              ) {
+                equalCount++;
+                equalCaptures.push(chainIndex + 3);
+              }
+              if (
+                chainCol > 0 &&
+                board[chainIndex - 1] &&
+                board[chainIndex - 1].owner !== newOwner &&
+                chainCard.values[3] === board[chainIndex - 1].values[1]
+              ) {
+                equalCount++;
+                equalCaptures.push(chainIndex - 1);
+              }
+              if (equalCount >= 2) {
+                newCaptures.push(...equalCaptures);
+              }
+            }
+
+            // Chain Sum
+            if (activeRules.includes("Sum")) {
+              let sumMatches = [];
+              if (
+                chainRow > 0 &&
+                board[chainIndex - 3] &&
+                board[chainIndex - 3].owner !== newOwner
+              ) {
+                sumMatches.push({
+                  index: chainIndex - 3,
+                  sum: chainCard.values[0] + board[chainIndex - 3].values[2],
+                });
+              }
+              if (
+                chainCol < 2 &&
+                board[chainIndex + 1] &&
+                board[chainIndex + 1].owner !== newOwner
+              ) {
+                sumMatches.push({
+                  index: chainIndex + 1,
+                  sum: chainCard.values[1] + board[chainIndex + 1].values[3],
+                });
+              }
+              if (
+                chainRow < 2 &&
+                board[chainIndex + 3] &&
+                board[chainIndex + 3].owner !== newOwner
+              ) {
+                sumMatches.push({
+                  index: chainIndex + 3,
+                  sum: chainCard.values[2] + board[chainIndex + 3].values[0],
+                });
+              }
+              if (
+                col > 0 &&
+                board[chainIndex - 1] &&
+                board[chainIndex - 1].owner !== newOwner
+              ) {
+                sumMatches.push({
+                  index: chainIndex - 1,
+                  sum: chainCard.values[3] + board[chainIndex - 1].values[1],
+                });
+              }
+              const sums = sumMatches.map((m) => m.sum);
+              const commonSum = sums.find((sum, i) => sums.indexOf(sum) !== i);
+              if (
+                commonSum &&
+                sumMatches.filter((m) => m.sum === commonSum).length >= 2
+              ) {
+                newCaptures.push(
+                  ...sumMatches
+                    .filter((m) => m.sum === commonSum)
+                    .map((m) => m.index)
+                );
+              }
+            }
+
+            newCaptures = [...new Set(newCaptures)].filter(
+              (idx) => !chainCaptures.includes(idx)
+            );
+            chainCaptures.push(...newCaptures);
+            queue.push(...newCaptures.map((idx) => ({ index: idx, newOwner })));
+          }
+        }
+
+        chainCaptures.forEach((i) => {
+          const oldOwner = board[i].owner;
+          board[i].owner = card.owner;
+          flippingCards.push({ index: i, progress: 0 });
+          if (oldOwner === "player") {
+            playerScore--;
+            aiScore++;
+          } else if (oldOwner === "ai") {
+            aiScore--;
+            playerScore++;
+          }
+          const flipSound = document.getElementById("flipSound");
+          flipSound.currentTime = 0;
+          flipSound.play();
+        });
+      }
+      function draw() {
+        if (!drawRequested) return;
+        drawRequested = false;
+
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        if (levelScreenVisible && Date.now() - levelScreenStartTime < 2000) {
+          ctx.fillStyle = "rgba(0, 0, 0, 0.9)";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.font = "48px 'Bangers'";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
+          ctx.shadowBlur = 2;
+          const gradient = ctx.createLinearGradient(
+            canvas.width / 2 - 100 * scaleFactor,
+            0,
+            canvas.width / 2 + 100 * scaleFactor,
+            0
+          );
+          gradient.addColorStop(0, "#ff3131");
+          gradient.addColorStop(1, "#31ff83");
+          ctx.fillStyle = gradient;
+          ctx.fillText(
+            `Level ${level}`,
+            canvas.width / 2,
+            canvas.height / 2 - 60 * scaleFactor
+          );
+          ctx.font = "36px 'Bangers'";
+          ctx.fillStyle = "#ffffff";
+          ctx.fillText(opponentName, canvas.width / 2, canvas.height / 2);
+          ctx.font = "24px 'Bangers'";
+          const rulesText =
+            activeRules.length > 0
+              ? `Rules: ${activeRules.join(", ")}`
+              : "Rules: None";
+          ctx.fillText(
+            rulesText,
+            canvas.width / 2,
+            canvas.height / 2 + 60 * scaleFactor
+          );
+          ctx.shadowColor = "transparent";
+          ctx.shadowBlur = 0;
+          drawRequested = true;
+          requestAnimationFrame(draw);
+          return;
+        } else {
+          levelScreenVisible = false;
+        }
+
+        if (cardStealScreenVisible || cardSelectionScreenVisible) {
+          document.getElementById("infoButton").style.display = "none";
+          drawRequested = true;
+          requestAnimationFrame(draw);
+          return;
+        }
+
+        document.getElementById("infoButton").style.display =
+          !tutorialVisible && !gameOver ? "flex" : "none";
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+        for (let y = 0; y < canvas.height; y += 10 * scaleFactor) {
+          ctx.fillRect(0, y, canvas.width, 2 * scaleFactor);
+        }
+
+        const headerHeight = 60 * scaleFactor;
+        ctx.font = "24px 'Bangers'";
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
+        ctx.shadowBlur = 2;
+        ctx.fillText(
+          `Score: ${totalScore}`,
+          canvas.width / 2 - 50 * scaleFactor,
+          30 * scaleFactor
+        );
+        const timerText = `${Math.floor(gameTime / 60)}:${(gameTime % 60)
+          .toString()
+          .padStart(2, "0")}`;
+        ctx.fillText(
+          timerText,
+          canvas.width / 2 + 50 * scaleFactor,
+          30 * scaleFactor
+        );
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+
+        const boardWidth = boardWidthPx * scaleFactor;
+        const boardHeight = boardHeightPx * scaleFactor;
+        const cellWidth = boardWidth / 3;
+        const cellHeight = boardHeight / 3;
+        const boardX = (canvas.width - boardWidth) / 2;
+        const boardY =
+          aiHandY * scaleFactor +
+          aiCardHeightPx * scaleFactor +
+          30 * scaleFactor;
+
+        ctx.fillStyle = "#333333";
+        ctx.fillRect(boardX, boardY, boardWidth, boardHeight);
+        if (boardImage.complete && boardImage.naturalWidth) {
+          ctx.drawImage(boardImage, boardX, boardY, boardWidth, boardHeight);
+        }
+
+        if (highlightedCell >= 0 && !board[highlightedCell]) {
+          const row = Math.floor(highlightedCell / 3);
+          const col = highlightedCell % 3;
+          ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+          ctx.fillRect(
+            boardX + col * cellWidth,
+            boardY + row * cellHeight,
+            cellWidth,
+            cellHeight
+          );
+        }
+
+        board.forEach((card, i) => {
+          if (card) {
+            const row = Math.floor(i / 3);
+            const col = i % 3;
+            const flip = flippingCards.find((f) => f.index === i);
+            if (flip) {
+              ctx.save();
+              ctx.translate(
+                boardX + col * cellWidth + cellWidth / 2,
+                boardY + row * cellHeight + cellHeight / 2
+              );
+              const angle = flip.progress * Math.PI;
+              ctx.scale(Math.cos(angle), 1);
+              ctx.translate(-cellWidth / 2, -cellHeight / 2);
+              const oldOwner =
+                flip.progress < 0.5
+                  ? card.owner === "player"
+                    ? "ai"
+                    : "player"
+                  : null;
+              drawCard(
+                0,
+                0,
+                card,
+                cardWidthPx,
+                cardHeightPx,
+                false,
+                false,
+                false,
+                oldOwner
+              );
+              ctx.restore();
+              flip.progress += 0.1 / 6;
+              if (flip.progress >= 1) {
+                flippingCards = flippingCards.filter((f) => f.index !== i);
+              }
+            } else {
+              drawCard(
+                boardX + col * cellWidth,
+                boardY + row * cellHeight,
+                card,
+                cardWidthPx,
+                cardHeightPx
+              );
+            }
+          }
+        });
+
+        const playerTotalHandWidth = handCardWidthPx * playerHand.length;
+        const playerHandX =
+          (canvas.width - playerTotalHandWidth * scaleFactor) / 2;
+        const handY = boardY + boardHeightPx * scaleFactor + 30 * scaleFactor;
+
+        playerHand.forEach((card, i) => {
+          if (i !== draggingCard && i !== hoveredCard) {
+            drawCard(
+              playerHandX + i * handCardWidthPx,
+              handY,
+              card,
+              handCardWidthPx,
+              handCardHeightPx,
+              selectedCard === i,
+              false,
+              false,
+              null,
+              false
+            );
+          }
+        });
+
+        if (
+          hoveredCard !== null &&
+          hoveredCard !== draggingCard &&
+          playerHand[hoveredCard]
+        ) {
+          drawCard(
+            playerHandX + hoveredCard * handCardWidthPx,
+            handY,
+            playerHand[hoveredCard],
+            handCardWidthPx,
+            handCardHeightPx,
+            selectedCard === hoveredCard,
+            false,
+            false,
+            null,
+            true
+          );
+        }
+
+        const aiTotalHandWidth = aiCardWidthPx * aiHand.length;
+        const aiHandX = (canvas.width - aiTotalHandWidth * scaleFactor) / 2;
+
+        aiHand.forEach((card, i) => {
+          drawCard(
+            aiHandX + i * aiCardWidthPx,
+            aiHandY * scaleFactor,
+            card,
+            aiCardWidthPx,
+            aiCardHeightPx,
+            false,
+            false,
+            activeRules.includes("Open") ? false : true
+          );
+        });
+
+        if (draggingCard !== null && playerHand[draggingCard]) {
+          drawCard(
+            dragX + dragOffsetX,
+            dragY + dragOffsetY,
+            playerHand[draggingCard],
+            handCardWidthPx,
+            handCardHeightPx,
+            true,
+            true,
+            false,
+            null,
+            true
+          );
+        }
+
+        ctx.font = "20px 'Bangers'";
+        ctx.textAlign = "center";
+        const indicatorXLeft = 35 * scaleFactor;
+        const indicatorXRight = 465 * scaleFactor;
+        const indicatorY = canvas.height / 2;
+        ctx.shadowColor = "rgba(0, 0, 0, 0.7)";
+        ctx.shadowBlur = 2;
+        ctx.fillStyle = "#31ff83";
+        ctx.fillText("AI", indicatorXLeft, indicatorY - 30 * scaleFactor);
+        ctx.font = "56px 'Bangers'";
+        ctx.fillText(aiScore, indicatorXLeft, indicatorY + 30 * scaleFactor);
+        ctx.font = "20px 'Bangers'";
+        ctx.fillStyle = "#ff3131";
+        ctx.fillText("YOU", indicatorXRight, indicatorY - 30 * scaleFactor);
+        ctx.font = "56px 'Bangers'";
+        ctx.fillText(
+          playerScore,
+          indicatorXRight,
+          indicatorY + 30 * scaleFactor
+        );
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+
+        if (startMessage.opacity > 0 && Date.now() - startMessage.time < 2000) {
+          ctx.fillStyle = `rgba(255, 255, 255, ${startMessage.opacity})`;
+          ctx.font = "20px 'Bangers'";
+          ctx.textAlign = "center";
+          ctx.fillText(startMessage.text, canvas.width / 2, canvas.height / 2);
+          startMessage.opacity -= 0.05;
+          drawRequested = true;
+          requestAnimationFrame(draw);
+        }
+
+        if (gameOver) {
+          document.getElementById("infoButton").style.display = "none";
+          ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "20px 'Bangers'";
+          ctx.textAlign = "center";
+          const result =
+            playerScore > aiScore
+              ? "You Win!"
+              : playerScore < aiScore
+              ? "AI Wins!"
+              : "Draw!";
+          ctx.fillText(result, canvas.width / 2, canvas.height / 2);
+          ctx.font = "16px 'Bangers'";
+          ctx.fillText(
+            "Tap to Continue",
+            canvas.width / 2,
+            canvas.height / 2 + 30 * scaleFactor
+          );
+        }
+
+        if (flippingCards.length > 0) {
+          drawRequested = true;
+          requestAnimationFrame(draw);
+        }
+      }
+
+      function aiMove() {
+        if (currentPlayer !== "ai" || gameOver) return;
+        const emptyCells = board
+          .map((cell, i) => (cell ? -1 : i))
+          .filter((i) => i >= 0);
+        if (emptyCells.length === 0 || aiHand.length === 0) {
+          endGame();
+          return;
+        }
+
+        let bestMove = null;
+        let bestScore = -1;
+        emptyCells.forEach((cell) => {
+          aiHand.forEach((card, cardIndex) => {
+            const tempBoard = [...board];
+            tempBoard[cell] = { ...card, owner: "ai" };
+            let captures = [];
+            const row = Math.floor(cell / 3);
+            const col = cell % 3;
+
+            // Standard capture
+            if (
+              row > 0 &&
+              tempBoard[cell - 3] &&
+              tempBoard[cell - 3].owner === "player"
+            ) {
+              if (card.values[0] > tempBoard[cell - 3].values[2])
+                captures.push(cell - 3);
+            }
+            if (
+              col < 2 &&
+              tempBoard[cell + 1] &&
+              tempBoard[cell + 1].owner === "player"
+            ) {
+              if (card.values[1] > tempBoard[cell + 1].values[3])
+                captures.push(cell + 1);
+            }
+            if (
+              row < 2 &&
+              tempBoard[cell + 3] &&
+              tempBoard[cell + 3].owner === "player"
+            ) {
+              if (card.values[2] > tempBoard[cell + 3].values[0])
+                captures.push(cell + 3);
+            }
+            if (
+              col > 0 &&
+              tempBoard[cell - 1] &&
+              tempBoard[cell - 1].owner === "player"
+            ) {
+              if (card.values[3] > tempBoard[cell - 1].values[1])
+                captures.push(cell - 1);
+            }
+
+            // Equal rule
+            if (activeRules.includes("Equal")) {
+              let equalCount = 0;
+              const equalCaptures = [];
+              if (
+                row > 0 &&
+                tempBoard[cell - 3] &&
+                tempBoard[cell - 3].owner === "player" &&
+                card.values[0] === tempBoard[cell - 3].values[2]
+              ) {
+                equalCount++;
+                equalCaptures.push(cell - 3);
+              }
+              if (
+                col < 2 &&
+                tempBoard[cell + 1] &&
+                tempBoard[cell + 1].owner === "player" &&
+                card.values[1] === tempBoard[cell + 1].values[3]
+              ) {
+                equalCount++;
+                equalCaptures.push(cell + 1);
+              }
+              if (
+                row < 2 &&
+                tempBoard[cell + 3] &&
+                tempBoard[cell + 3].owner === "player" &&
+                card.values[2] === tempBoard[cell + 3].values[0]
+              ) {
+                equalCount++;
+                equalCaptures.push(cell + 3);
+              }
+              if (
+                col > 0 &&
+                tempBoard[cell - 1] &&
+                tempBoard[cell - 1].owner === "player" &&
+                card.values[3] === tempBoard[cell - 1].values[1]
+              ) {
+                equalCount++;
+                equalCaptures.push(cell - 1);
+              }
+              if (equalCount >= 2) {
+                captures.push(...equalCaptures);
+              }
+            }
+
+            // Sum rule
+            if (activeRules.includes("Sum")) {
+              let sumMatches = [];
+              if (
+                row > 0 &&
+                tempBoard[cell - 3] &&
+                tempBoard[cell - 3].owner === "player"
+              ) {
+                sumMatches.push({
+                  index: cell - 3,
+                  sum: card.values[0] + tempBoard[cell - 3].values[2],
+                });
+              }
+              if (
+                col < 2 &&
+                tempBoard[cell + 1] &&
+                tempBoard[cell + 1].owner === "player"
+              ) {
+                sumMatches.push({
+                  index: cell + 1,
+                  sum: card.values[1] + tempBoard[cell + 1].values[3],
+                });
+              }
+              if (
+                row < 2 &&
+                tempBoard[cell + 3] &&
+                tempBoard[cell + 3].owner === "player"
+              ) {
+                sumMatches.push({
+                  index: cell + 3,
+                  sum: card.values[2] + tempBoard[cell + 3].values[0],
+                });
+              }
+              if (
+                col > 0 &&
+                tempBoard[cell - 1] &&
+                tempBoard[cell - 1].owner === "player"
+              ) {
+                sumMatches.push({
+                  index: cell - 1,
+                  sum: card.values[3] + tempBoard[cell - 1].values[1],
+                });
+              }
+              const sums = sumMatches.map((m) => m.sum);
+              const commonSum = sums.find((sum, i) => sums.indexOf(sum) !== i);
+              if (
+                commonSum &&
+                sumMatches.filter((m) => m.sum === commonSum).length >= 2
+              ) {
+                captures.push(
+                  ...sumMatches
+                    .filter((m) => m.sum === commonSum)
+                    .map((m) => m.index)
+                );
+              }
+            }
+
+            // Chain rule
+            if (activeRules.includes("Chain")) {
+              const chainQueue = captures.map((idx) => idx);
+              let chainCaptures = [...captures];
+              while (chainQueue.length > 0) {
+                const chainIndex = chainQueue.shift();
+                const chainRow = Math.floor(chainIndex / 3);
+                const chainCol = chainIndex % 3;
+                const chainCard = tempBoard[chainIndex] || card;
+
+                let newCaptures = [];
+                if (
+                  chainRow > 0 &&
+                  tempBoard[chainIndex - 3] &&
+                  tempBoard[chainIndex - 3].owner === "player"
+                ) {
+                  if (chainCard.values[0] > tempBoard[chainIndex - 3].values[2])
+                    newCaptures.push(chainIndex - 3);
+                }
+                if (
+                  chainCol < 2 &&
+                  tempBoard[chainIndex + 1] &&
+                  tempBoard[chainIndex + 1].owner === "player"
+                ) {
+                  if (chainCard.values[1] > tempBoard[chainIndex + 1].values[3])
+                    newCaptures.push(chainIndex + 1);
+                }
+                if (
+                  chainRow < 2 &&
+                  tempBoard[chainIndex + 3] &&
+                  tempBoard[chainIndex + 3].owner === "player"
+                ) {
+                  if (chainCard.values[2] > tempBoard[chainIndex + 3].values[0])
+                    newCaptures.push(chainIndex + 3);
+                }
+                if (
+                  chainCol > 0 &&
+                  tempBoard[chainIndex - 1] &&
+                  tempBoard[chainIndex - 1].owner === "player"
+                ) {
+                  if (chainCard.values[3] > tempBoard[chainIndex - 1].values[1])
+                    newCaptures.push(chainIndex - 1);
+                }
+
+                // Chain Equal
+                if (activeRules.includes("Equal")) {
+                  let equalCount = 0;
+                  const equalCaptures = [];
+                  if (
+                    chainRow > 0 &&
+                    tempBoard[chainIndex - 3] &&
+                    tempBoard[chainIndex - 3].owner === "player" &&
+                    chainCard.values[0] === tempBoard[chainIndex - 3].values[2]
+                  ) {
+                    equalCount++;
+                    equalCaptures.push(chainIndex - 3);
+                  }
+                  if (
+                    chainCol < 2 &&
+                    tempBoard[chainIndex + 1] &&
+                    tempBoard[chainIndex + 1].owner === "player" &&
+                    chainCard.values[1] === tempBoard[chainIndex + 1].values[3]
+                  ) {
+                    equalCount++;
+                    equalCaptures.push(chainIndex + 1);
+                  }
+                  if (
+                    chainRow < 2 &&
+                    tempBoard[chainIndex + 3] &&
+                    tempBoard[chainIndex + 3].owner === "player" &&
+                    chainCard.values[2] === tempBoard[chainIndex + 3].values[0]
+                  ) {
+                    equalCount++;
+                    equalCaptures.push(chainIndex + 3);
+                  }
+                  if (
+                    chainCol > 0 &&
+                    tempBoard[chainIndex - 1] &&
+                    tempBoard[chainIndex - 1].owner === "player" &&
+                    chainCard.values[3] === tempBoard[chainIndex - 1].values[1]
+                  ) {
+                    equalCount++;
+                    equalCaptures.push(chainIndex - 1);
+                  }
+                  if (equalCount >= 2) {
+                    newCaptures.push(...equalCaptures);
+                  }
+                }
+
+                // Chain Sum
+                if (activeRules.includes("Sum")) {
+                  let sumMatches = [];
+                  if (
+                    chainRow > 0 &&
+                    tempBoard[chainIndex - 3] &&
+                    tempBoard[chainIndex - 3].owner === "player"
+                  ) {
+                    sumMatches.push({
+                      index: chainIndex - 3,
+                      sum:
+                        chainCard.values[0] +
+                        tempBoard[chainIndex - 3].values[2],
+                    });
+                  }
+                  if (
+                    chainCol < 2 &&
+                    tempBoard[chainIndex + 1] &&
+                    tempBoard[chainIndex + 1].owner === "player"
+                  ) {
+                    sumMatches.push({
+                      index: chainIndex + 1,
+                      sum:
+                        chainCard.values[1] +
+                        tempBoard[chainIndex + 1].values[3],
+                    });
+                  }
+                  if (
+                    chainRow < 2 &&
+                    tempBoard[chainIndex + 3] &&
+                    tempBoard[chainIndex + 3].owner === "player"
+                  ) {
+                    sumMatches.push({
+                      index: chainIndex + 3,
+                      sum:
+                        chainCard.values[2] +
+                        tempBoard[chainIndex + 3].values[0],
+                    });
+                  }
+                  if (
+                    chainCol > 0 &&
+                    tempBoard[chainIndex - 1] &&
+                    tempBoard[chainIndex - 1].owner === "player"
+                  ) {
+                    sumMatches.push({
+                      index: chainIndex - 1,
+                      sum:
+                        chainCard.values[3] +
+                        tempBoard[chainIndex - 1].values[1],
+                    });
+                  }
+                  const sums = sumMatches.map((m) => m.sum);
+                  const commonSum = sums.find(
+                    (sum, i) => sums.indexOf(sum) !== i
+                  );
+                  if (
+                    commonSum &&
+                    sumMatches.filter((m) => m.sum === commonSum).length >= 2
+                  ) {
+                    newCaptures.push(
+                      ...sumMatches
+                        .filter((m) => m.sum === commonSum)
+                        .map((m) => m.index)
+                    );
+                  }
+                }
+
+                newCaptures = newCaptures.filter(
+                  (idx) => !chainCaptures.includes(idx)
+                );
+                chainCaptures.push(...newCaptures);
+                chainQueue.push(...newCaptures);
+              }
+              captures = chainCaptures;
+            }
+
+            const score = captures.length;
+            if (score > bestScore) {
+              bestScore = score;
+              bestMove = { cell, cardIndex };
+            }
+          });
+        });
+
+        if (bestMove) {
+          const { cell, cardIndex } = bestMove;
+          board[cell] = aiHand[cardIndex];
+          checkCapture(cell, board[cell]);
+          aiHand.splice(cardIndex, 1);
+          currentPlayer = "player";
+          if (
+            board.every((cell) => cell) ||
+            (playerHand.length === 0 && aiHand.length === 0)
+          ) {
+            endGame();
+          }
+        }
+        drawRequested = true;
+        requestAnimationFrame(draw);
+      }
+
+      function endGame() {
+        gameOver = true;
+        clearInterval(timerInterval);
+        if (playerScore > aiScore) {
+          totalScore += Math.floor(10000 * Math.max(1, 2 - gameTime / 60));
+          showCardStealScreen();
+        } else if (playerScore < aiScore) {
+          document.getElementById("gameOverScreen").style.display = "flex";
+        } else {
+          playerHand = [];
+          initGame();
+        }
+        drawRequested = true;
+        requestAnimationFrame(draw);
+      }
+
+      let dragX = 0;
+      let dragY = 0;
+
+      function handleStart(x, y) {
+        if (
+          tutorialVisible ||
+          levelScreenVisible ||
+          cardStealScreenVisible ||
+          cardSelectionScreenVisible
+        )
+          return;
+        if (gameOver) {
+          if (playerScore > aiScore) {
+            showCardStealScreen();
+          } else {
+            document.getElementById("gameOverScreen").style.display = "flex";
+          }
+          return;
+        }
+        if (currentPlayer !== "player") return;
+        document.getElementById("backgroundMusic").muted = false;
+
+        const boardY =
+          aiHandY * scaleFactor +
+          aiCardHeightPx * scaleFactor +
+          30 * scaleFactor;
+        const handY = boardY + boardHeightPx * scaleFactor + 30 * scaleFactor;
+        const totalHandWidth = handCardWidthPx * playerHand.length;
+        const handX = (canvas.width - totalHandWidth * scaleFactor) / 2;
+
+        if (y > handY && y < handY + handCardHeightPx * scaleFactor) {
+          for (let i = playerHand.length - 1; i >= 0; i--) {
+            const cardX = handX + i * handCardWidthPx * scaleFactor;
+            if (x >= cardX && x < cardX + handCardWidthPx * scaleFactor) {
+              draggingCard = i;
+              hoveredCard = null;
+              dragOffsetX = (-handCardWidthPx / 2) * scaleFactor;
+              dragOffsetY = (-handCardHeightPx / 2) * scaleFactor;
+              dragX = x;
+              dragY = y;
+              drawRequested = true;
+              requestAnimationFrame(draw);
+              break;
+            }
+          }
+        }
+      }
+
+      function handleMove(x, y) {
+        dragX = x;
+        dragY = y;
+
+        const boardY =
+          aiHandY * scaleFactor +
+          aiCardHeightPx * scaleFactor +
+          30 * scaleFactor;
+        const handY = boardY + boardHeightPx * scaleFactor + 30 * scaleFactor;
+        const totalHandWidth = handCardWidthPx * playerHand.length;
+        const handX = (canvas.width - totalHandWidth * scaleFactor) / 2;
+
+        if (
+          draggingCard === null &&
+          y > handY &&
+          y < handY + handCardHeightPx * scaleFactor
+        ) {
+          hoveredCard = null;
+          for (let i = playerHand.length - 1; i >= 0; i--) {
+            const cardX = handX + i * handCardWidthPx * scaleFactor;
+            if (x >= cardX && x < cardX + handCardWidthPx * scaleFactor) {
+              hoveredCard = i;
+              break;
+            }
+          }
+        } else if (draggingCard === null) {
+          hoveredCard = null;
+        }
+
+        const boardWidth = boardWidthPx * scaleFactor;
+        const boardHeight = boardHeightPx * scaleFactor;
+        const cellWidth = boardWidth / 3;
+        const cellHeight = boardHeight / 3;
+        const boardX = (canvas.width - boardWidth) / 2;
+
+        highlightedCell = -1;
+        if (
+          x >= boardX &&
+          x < boardX + boardWidth &&
+          y >= boardY &&
+          y < boardY + boardHeight
+        ) {
+          const col = Math.floor((x - boardX) / cellWidth);
+          const row = Math.floor((y - boardY) / cellHeight);
+          const index = row * 3 + col;
+          if (!board[index]) highlightedCell = index;
+        }
+
+        drawRequested = true;
+        requestAnimationFrame(draw);
+      }
+
+      function handleEnd() {
+        if (draggingCard === null) return;
+        document.getElementById("backgroundMusic").muted = false;
+        const boardWidth = boardWidthPx * scaleFactor;
+        const boardHeight = boardHeightPx * scaleFactor;
+        const cellWidth = boardWidth / 3;
+        const cellHeight = boardHeight / 3;
+        const boardX = (canvas.width - boardWidth) / 2;
+        const boardY =
+          aiHandY * scaleFactor +
+          aiCardHeightPx * scaleFactor +
+          30 * scaleFactor;
+        if (
+          dragX >= boardX &&
+          dragX < boardX + boardWidth &&
+          dragY >= boardY &&
+          dragY < boardY + boardHeight
+        ) {
+          const col = Math.floor((dragX - boardX) / cellWidth);
+          const row = Math.floor((dragY - boardY) / cellHeight);
+          const index = row * 3 + col;
+          if (!board[index]) {
+            board[index] = playerHand[draggingCard];
+            checkCapture(index, board[index]);
+            playerHand.splice(draggingCard, 1);
+            currentPlayer = "ai";
+            if (
+              board.every((cell) => cell) ||
+              (playerHand.length === 0 && aiHand.length === 0)
+            ) {
+              endGame();
+            } else {
+              setTimeout(aiMove, 1000);
+            }
+          }
+        }
+        draggingCard = null;
+        hoveredCard = null;
+        highlightedCell = -1;
+        drawRequested = true;
+        requestAnimationFrame(draw);
+      }
+
+      canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        handleStart(
+          (touch.clientX - rect.left) * (canvas.width / rect.width),
+          (touch.clientY - rect.top) * (canvas.height / rect.height)
+        );
+      });
+
+      canvas.addEventListener("touchmove", (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        handleMove(
+          (touch.clientX - rect.left) * (canvas.width / rect.width),
+          (touch.clientY - rect.top) * (canvas.height / rect.height)
+        );
+      });
+
+      canvas.addEventListener("touchend", (e) => {
+        e.preventDefault();
+        handleEnd();
+      });
+
+      canvas.addEventListener("mousedown", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        handleStart(
+          (e.clientX - rect.left) * (canvas.width / rect.width),
+          (e.clientY - rect.top) * (canvas.height / rect.height)
+        );
+      });
+
+      canvas.addEventListener("mousemove", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        handleMove(
+          (e.clientX - rect.left) * (canvas.width / rect.width),
+          (e.clientY - rect.top) * (canvas.height / rect.height)
+        );
+      });
+
+      canvas.addEventListener("mouseup", () => {
+        handleEnd();
+      });
+
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+    </script>
+  </body>
+</html>
