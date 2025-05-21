@@ -70,7 +70,7 @@
       #tutorial p,
       #cardStealScreen p,
       #cardSelectionScreen p {
-        font-size: 20px;
+        font-size: 16px;
         margin: 10px 0;
       }
       #tutorial button,
@@ -304,14 +304,19 @@
       <canvas id="gameCanvas"></canvas>
       <div id="tutorial">
         <h1>Triple Triad Meme</h1>
-        <p>Drag cards and capture opponent's cards</p>
-        <p>Advance through increasingly difficult levels</p>
+        <p>Each card has diamond values that mean the value of each side.</p>
+        <p>Flip rival cards by placing one with a higher value next to it.</p>
+        <p>The one with the most cards at the end of the game wins.</p>
         <button id="rulesButton" onclick="openRulesModal()">Read Rules</button>
         <button id="startButton" onclick="startGame()">Start</button>
       </div>
       <div id="rulesModal">
         <div class="modal-content">
           <h2>Game Rules</h2>
+          <p>
+            The rules apply beyond the normal functioning of the cards, only at
+            certain levels.
+          </p>
           <p>
             <strong class="rule-name">Equal:</strong> If a card is placed with
             two or more edges whose values equal those of adjacent cards (own or
